@@ -1,22 +1,25 @@
 using System.IO;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
+using Microsoft.OneDrive.Sdk;
+using Swync.core.Authentication;
+using Swync.integration.Config;
 using Xunit;
 
 namespace Swync.integration
 {
-    public class AuthenticationTests
+    public class AuthenticationTests : IntegrationTestBase
     {
         [Fact]
         public void CredentialsHaveBeenSet()
         {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
-                .Build();
+            var config = new AppSettings();
 
-            config["onedrive:username"].Should().NotBeNullOrEmpty();
-            config["onedrive:password"].Should().NotBeNullOrEmpty();
+            var credentials = config.OnedriveCredentials;
+            credentials.HasValue.Should().BeTrue();
+            credentials.Value.Username.Should().NotBeNullOrWhiteSpace();
+            credentials.Value.Password.Should().NotBeNullOrWhiteSpace();
         }
     }
 }

@@ -17,4 +17,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Swync.core\Swync.core.csproj" />
+  </ItemGroup>
 </Project>
