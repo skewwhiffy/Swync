@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Swync.core.Functional;
@@ -15,9 +14,9 @@ namespace Swync.core.Authentication
     public class Authenticator
     {
         private const string ClientId = "23aec4fb-a025-46f7-beba-02caeac8b791";
+        private static readonly int[] PortsRegisteredWithMicrosoft = {80, 8080, 38080};
 
-        private static readonly string[] Scopes = new[]
-        {
+        private static readonly string[] Scopes = {
             "files.readwrite",
             "offline_access"
         };
@@ -48,16 +47,25 @@ namespace Swync.core.Authentication
         private int GetFreePort()
         {
             TcpListener tcp = null;
-            try
+            foreach (var port in PortsRegisteredWithMicrosoft)
             {
-                tcp = new TcpListener(IPAddress.Any, 0);
-                tcp.Start();
-                return ((IPEndPoint) tcp.LocalEndpoint).Port;
+                try
+                {
+                    tcp = new TcpListener(IPAddress.Any, port);
+                    tcp.Start();
+                    return port;
+                }
+                catch
+                {
+                    // Never mind, try the next one
+                }
+                finally
+                {
+                    tcp?.Stop();
+                }
             }
-            finally
-            {
-                tcp?.Stop();
-            }
+
+            throw new NotImplementedException("Need another port");
         }
         
         private async Task<string> ListenForAuthorizationCode(int port)
