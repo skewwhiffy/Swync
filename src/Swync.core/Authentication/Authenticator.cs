@@ -102,7 +102,7 @@ namespace Swync.core.Authentication
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    Process.Start("xdg-open", url);
+                    Process.Start("sensible-browser", url);
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
