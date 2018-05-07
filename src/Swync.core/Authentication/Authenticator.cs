@@ -15,6 +15,7 @@ namespace Swync.core.Authentication
     public class Authenticator
     {
         private const string ClientId = "21133f26-e5d8-486b-8b27-0801db6496a9";
+        private const string ClientSecret = "gcyhkJZK73!$:zqHNBE243}";
         private static readonly int[] PortsRegisteredWithMicrosoft = {80, 8080, 38080};
 
         private static readonly string[] Scopes = {
@@ -30,7 +31,6 @@ namespace Swync.core.Authentication
         
         public async Task<string> GetAuthorizationCodeAsync()
         {
-            return "M39eba934-f3e7-62ed-e89d-60e0ffb678f6";
             var listenTask = ListenForAuthorizationCode(Port);
             var queryVariables = new Dictionary<string, string>
             {
@@ -48,7 +48,7 @@ namespace Swync.core.Authentication
             return await listenTask;
         }
 
-        public async Task<string> GetRefreshTokenAsync(string authToken)
+        public async Task<TokenDetails> GetRefreshTokenAsync(string authToken)
         {
             var queryVariables = new Dictionary<string, string>
             {
@@ -56,17 +56,14 @@ namespace Swync.core.Authentication
                 {"redirect_uri", Callback},
                 {"code", authToken},
                 {"grant_type", "authorization_code"},
-                {"client_secret", "gcyhkJZK73!$:zqHNBE243}"}
+                {"client_secret", ClientSecret}
             };
-            var postPayload = queryVariables
-                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Pipe(HttpUtility.UrlEncode))
-                .Select(kvp => $"{kvp.Key}={kvp.Value}")
-                .Join("&");
             using (var client = new HttpClient())
             {
                 var content = new FormUrlEncodedContent(queryVariables);
                 var response = await client.PostAsync("https://login.microsoftonline.com/common/oauth2/v2.0/token", content);
-                return await response.Content.ReadAsStringAsync();
+                var payload = await response.Content.ReadAsStringAsync();
+                return TokenDetails.FromTokenResponse(payload);
             }
         }
         

@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Newtonsoft.Json;
 using Swync.core.Authentication;
 
 namespace Swync.integration
@@ -13,7 +14,9 @@ namespace Swync.integration
             var code = codeTask.Result;
             var refreshTokenTask = authenticator.GetRefreshTokenAsync(code);
             refreshTokenTask.Wait();
-            true.Should().BeFalse($"Authorization code is ${code}, refresh token is ${refreshTokenTask.Result}");
+            true
+                .Should()
+                .BeFalse($"Refresh token: {JsonConvert.SerializeObject(refreshTokenTask.Result)}");
         }
     }
 }
