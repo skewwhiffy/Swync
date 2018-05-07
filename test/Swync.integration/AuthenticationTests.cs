@@ -14,12 +14,6 @@ namespace Swync.integration
         [Fact]
         public void CredentialsHaveBeenSet()
         {
-            var config = new AppSettings();
-
-            var credentials = config.OnedriveCredentials;
-            credentials.HasValue.Should().BeTrue();
-            credentials.Value.Username.Should().NotBeNullOrWhiteSpace();
-            credentials.Value.Password.Should().NotBeNullOrWhiteSpace();
         }
     }
 }

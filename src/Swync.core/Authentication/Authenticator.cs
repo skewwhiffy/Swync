@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Dynamic;
+using System.Text;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -8,6 +11,7 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Web;
+using Newtonsoft.Json;
 using Swync.core.Functional;
 
 namespace Swync.core.Authentication
@@ -17,6 +21,7 @@ namespace Swync.core.Authentication
         private const string ClientId = "21133f26-e5d8-486b-8b27-0801db6496a9";
         private const string ClientSecret = "gcyhkJZK73!$:zqHNBE243}";
         private static readonly int[] PortsRegisteredWithMicrosoft = {80, 8080, 38080};
+        private const string FileName = ".accessToken";
 
         private static readonly string[] Scopes = {
             "files.readwrite",
@@ -29,7 +34,89 @@ namespace Swync.core.Authentication
        
         private const string ResponseType = "code";
         
-        public async Task<string> GetAuthorizationCodeAsync()
+
+        public async Task<RefreshTokenDetails> GetAccessTokenAsync()
+        {
+            var refreshToken = await GetRefreshTokenAsync();
+            if (refreshToken.ExpiryTime > DateTime.UtcNow.AddSeconds(30))
+            {
+                return refreshToken;
+            }
+
+            var queryVariables = new Dictionary<string, string>
+            {
+                {"client_id", ClientId},
+                {"redirect_uri", Callback},
+                {"refresh_token", refreshToken.RefreshToken},
+                {"grant_type", "refresh_token"},
+                {"client_secret", ClientSecret}
+            };
+            using (var client = new HttpClient())
+            {
+                var content = new FormUrlEncodedContent(queryVariables);
+                var response = await client.PostAsync("https://login.microsoftonline.com/common/oauth2/v2.0/token", content);
+                var payload = await response.Content.ReadAsStringAsync();
+                refreshToken = RefreshTokenDetails.FromTokenResponse(payload);
+                if (refreshToken.RefreshToken == null)
+                {
+                    var ex = new
+                    {
+                        payload = payload,
+                        content = queryVariables
+                    };
+                    throw new InvalidOperationException(JsonConvert.SerializeObject(ex));
+                }
+            }
+            using (var writer = new StreamWriter(FileName))
+            {
+                await writer.WriteAsync(JsonConvert.SerializeObject(refreshToken));
+            }
+
+            return refreshToken;
+        }
+        
+        private async Task<RefreshTokenDetails> GetRefreshTokenAsync()
+        {
+            var queryVariables = new Dictionary<string, string>
+            {
+                {"client_id", ClientId},
+                {"redirect_uri", Callback},
+                {"grant_type", "authorization_code"},
+                {"client_secret", ClientSecret}
+            };
+            RefreshTokenDetails token;
+            try
+            {
+                using (var reader = new StreamReader(FileName))
+                {
+                    var content = await reader.ReadToEndAsync();
+                    token = RefreshTokenDetails.FromTokenResponse(content);
+                    return token;
+                }
+            }
+            catch (FileNotFoundException)
+            {
+                var authToken = await GetAuthorizationCodeAsync();
+                queryVariables.Add("code", authToken);
+            }
+
+            using (var client = new HttpClient())
+            {
+                var content = new FormUrlEncodedContent(queryVariables);
+                var response = await client.PostAsync("https://login.live.com/oauth20_token.srf", content);
+                var payload = await response.Content.ReadAsStringAsync();
+                token = RefreshTokenDetails.FromTokenResponse(payload);
+            }
+
+            using (var writer = new StreamWriter(FileName))
+            {
+                await writer.WriteAsync(JsonConvert.SerializeObject(token));
+            }
+
+            return token;
+        }
+
+        private async Task<string> GetAuthorizationCodeAsync()
         {
             var listenTask = ListenForAuthorizationCode(Port);
             var queryVariables = new Dictionary<string, string>
@@ -43,28 +130,9 @@ namespace Swync.core.Authentication
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Pipe(HttpUtility.UrlEncode))
                 .Select(kvp => $"{kvp.Key}={kvp.Value}")
                 .Join("&");
-            OpenBrowser($"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?{queryVariablesString}");
+            OpenBrowser($"https://login.live.com/oauth20_authorize.srf?{queryVariablesString}");
             
             return await listenTask;
-        }
-
-        public async Task<TokenDetails> GetRefreshTokenAsync(string authToken)
-        {
-            var queryVariables = new Dictionary<string, string>
-            {
-                {"client_id", ClientId},
-                {"redirect_uri", Callback},
-                {"code", authToken},
-                {"grant_type", "authorization_code"},
-                {"client_secret", ClientSecret}
-            };
-            using (var client = new HttpClient())
-            {
-                var content = new FormUrlEncodedContent(queryVariables);
-                var response = await client.PostAsync("https://login.microsoftonline.com/common/oauth2/v2.0/token", content);
-                var payload = await response.Content.ReadAsStringAsync();
-                return TokenDetails.FromTokenResponse(payload);
-            }
         }
         
         private int GetFreePort()
@@ -98,16 +166,15 @@ namespace Swync.core.Authentication
             listener.Start();
             var context = await listener.GetContextAsync();
             var buffer = "<HTML><BODY><SCRIPT>close()</SCRIPT></BODY></HTML>"
-                .Pipe(System.Text.Encoding.UTF8.GetBytes);
+                .Pipe(Encoding.UTF8.GetBytes);
             context
                 .Response
                 .ContentLength64 = buffer.Length;
-            context.Response.OutputStream.Write(buffer, 0, buffer.Length);
+            await context.Response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
             context.Response.OutputStream.Close();
             listener.Stop();
             return context.Request.QueryString["code"];
         }
-        
         
         private static void OpenBrowser(string url)
         {

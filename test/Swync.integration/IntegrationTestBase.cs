@@ -9,14 +9,8 @@ namespace Swync.integration
         protected IntegrationTestBase()
         {
             var authenticator = new Authenticator();
-            var codeTask = authenticator.GetAuthorizationCodeAsync();
-            codeTask.Wait();
-            var code = codeTask.Result;
-            var refreshTokenTask = authenticator.GetRefreshTokenAsync(code);
-            refreshTokenTask.Wait();
-            true
-                .Should()
-                .BeFalse($"Refresh token: {JsonConvert.SerializeObject(refreshTokenTask.Result)}");
+            var accessTokenTask = authenticator.GetAccessTokenAsync();
+            accessTokenTask.Wait();
         }
     }
 }
