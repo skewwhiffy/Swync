@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Newtonsoft.Json;
@@ -17,6 +18,7 @@ namespace Swync.core.Onedrive.Authentication
 {
     public class Authenticator
     {
+        private static readonly SemaphoreSlim FileLock = new SemaphoreSlim(1, 1);
         private const string FileName = ".accessToken";
         private const string ClientId = "21133f26-e5d8-486b-8b27-0801db6496a9";
         private const string ClientSecret = "gcyhkJZK73!$:zqHNBE243}";
@@ -45,6 +47,7 @@ namespace Swync.core.Onedrive.Authentication
             RefreshTokenDetails token;
             try
             {
+                await FileLock.WaitAsync();
                 using (var reader = new StreamReader(FileName))
                 {
                     var content = await reader.ReadToEndAsync();
@@ -53,16 +56,20 @@ namespace Swync.core.Onedrive.Authentication
                     {
                         return token;
                     }
-
-                    queryVariables["grant_type"] = "refresh_token";
-                    queryVariables["refresh_token"] = token.RefreshToken;
                 }
+
+                queryVariables["grant_type"] = "refresh_token";
+                queryVariables["refresh_token"] = token.RefreshToken;
             }
             catch (FileNotFoundException)
             {
                 var authToken = await GetAuthorizationCodeAsync();
                 queryVariables["grant_type"] = "authorization_code";
                 queryVariables["code"] = authToken;
+            }
+            finally
+            {
+                FileLock.Release();
             }
 
             using (var client = new HttpClient())
@@ -73,9 +80,17 @@ namespace Swync.core.Onedrive.Authentication
                 token = RefreshTokenDetails.FromTokenResponse(payload);
             }
 
-            using (var writer = new StreamWriter(FileName))
+            try
             {
-                await writer.WriteAsync(JsonConvert.SerializeObject(token));
+                await FileLock.WaitAsync();
+                using (var writer = new StreamWriter(FileName))
+                {
+                    await writer.WriteAsync(JsonConvert.SerializeObject(token));
+                }
+            }
+            finally
+            {
+                FileLock.Release();
             }
 
             return token;
