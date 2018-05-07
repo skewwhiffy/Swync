@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using Newtonsoft.Json;
-using Swync.core.Authentication;
+using Swync.core.Onedrive.Authentication;
 
 namespace Swync.integration
 {

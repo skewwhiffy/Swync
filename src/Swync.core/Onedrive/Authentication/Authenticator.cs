@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Newtonsoft.Json;
 using Swync.core.Functional;
 
-namespace Swync.core.Authentication
+namespace Swync.core.Onedrive.Authentication
 {
     public class Authenticator
     {
