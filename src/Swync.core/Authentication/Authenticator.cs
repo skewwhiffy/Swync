@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Dynamic;
 using System.Text;
 using System.IO;
 using System.Linq;
@@ -18,10 +17,10 @@ namespace Swync.core.Authentication
 {
     public class Authenticator
     {
+        private const string FileName = ".accessToken";
         private const string ClientId = "21133f26-e5d8-486b-8b27-0801db6496a9";
         private const string ClientSecret = "gcyhkJZK73!$:zqHNBE243}";
         private static readonly int[] PortsRegisteredWithMicrosoft = {80, 8080, 38080};
-        private const string FileName = ".accessToken";
 
         private static readonly string[] Scopes = {
             "files.readwrite",
@@ -37,51 +36,10 @@ namespace Swync.core.Authentication
 
         public async Task<RefreshTokenDetails> GetAccessTokenAsync()
         {
-            var refreshToken = await GetRefreshTokenAsync();
-            if (refreshToken.ExpiryTime > DateTime.UtcNow.AddSeconds(30))
-            {
-                return refreshToken;
-            }
-
             var queryVariables = new Dictionary<string, string>
             {
                 {"client_id", ClientId},
                 {"redirect_uri", Callback},
-                {"refresh_token", refreshToken.RefreshToken},
-                {"grant_type", "refresh_token"},
-                {"client_secret", ClientSecret}
-            };
-            using (var client = new HttpClient())
-            {
-                var content = new FormUrlEncodedContent(queryVariables);
-                var response = await client.PostAsync("https://login.microsoftonline.com/common/oauth2/v2.0/token", content);
-                var payload = await response.Content.ReadAsStringAsync();
-                refreshToken = RefreshTokenDetails.FromTokenResponse(payload);
-                if (refreshToken.RefreshToken == null)
-                {
-                    var ex = new
-                    {
-                        payload = payload,
-                        content = queryVariables
-                    };
-                    throw new InvalidOperationException(JsonConvert.SerializeObject(ex));
-                }
-            }
-            using (var writer = new StreamWriter(FileName))
-            {
-                await writer.WriteAsync(JsonConvert.SerializeObject(refreshToken));
-            }
-
-            return refreshToken;
-        }
-        
-        private async Task<RefreshTokenDetails> GetRefreshTokenAsync()
-        {
-            var queryVariables = new Dictionary<string, string>
-            {
-                {"client_id", ClientId},
-                {"redirect_uri", Callback},
-                {"grant_type", "authorization_code"},
                 {"client_secret", ClientSecret}
             };
             RefreshTokenDetails token;
@@ -91,13 +49,20 @@ namespace Swync.core.Authentication
                 {
                     var content = await reader.ReadToEndAsync();
                     token = RefreshTokenDetails.FromTokenResponse(content);
-                    return token;
+                    if (token.ExpiryTime > DateTime.UtcNow.AddSeconds(30))
+                    {
+                        return token;
+                    }
+
+                    queryVariables["grant_type"] = "refresh_token";
+                    queryVariables["refresh_token"] = token.RefreshToken;
                 }
             }
             catch (FileNotFoundException)
             {
                 var authToken = await GetAuthorizationCodeAsync();
-                queryVariables.Add("code", authToken);
+                queryVariables["grant_type"] = "authorization_code";
+                queryVariables["code"] = authToken;
             }
 
             using (var client = new HttpClient())
