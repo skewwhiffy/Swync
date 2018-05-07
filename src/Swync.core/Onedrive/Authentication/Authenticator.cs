@@ -16,7 +16,7 @@ using Swync.core.Functional;
 
 namespace Swync.core.Onedrive.Authentication
 {
-    public class Authenticator
+    public class Authenticator : IAuthenticator
     {
         private static readonly SemaphoreSlim FileLock = new SemaphoreSlim(1, 1);
         private const string FileName = ".accessToken";
