@@ -1,10 +1,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Newtonsoft.Json;
-using Swync.core.Functional;
 using Swync.core.Onedrive.Authentication;
-using Swync.core.Onedrive.Directory;
+using Swync.core.Onedrive.Items;
 using Swync.test.common.Extensions;
 using Xunit;
 using Xunit.Abstractions;
@@ -29,9 +27,7 @@ namespace Swync.integration
             var drives = await _sut.GetDrivesAsync();
 
             var drivesList = drives.ToList();
-            drivesList
-                .Pipe(JsonConvert.SerializeObject)
-                .Pipe(_output.WriteLine);
+            _output.WriteJson(drivesList);
             drivesList.Should().NotBeEmpty();
         }
 
@@ -40,9 +36,12 @@ namespace Swync.integration
         {
             var drives = await _sut.GetDrivesAsync();
             var drive = drives.TakeRandom();
-            var directories = await _sut.GetDirectories(drive);
+            
+            var directories = await _sut.GetItems(drive);
 
-            directories.Should().NotBeEmpty();
+            var directoriesList = directories.ToList();
+            _output.WriteJson(directoriesList);
+            directoriesList.Should().NotBeEmpty();
         }
     }
 }

@@ -3,10 +3,17 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Swync.core.Functional;
 using Swync.core.Onedrive.Authentication;
 
-namespace Swync.core.Onedrive.Directory
+namespace Swync.core.Onedrive.Items
 {
+    public static class JsonExtensions
+    {
+        public static string PrettyJson(this string json) => json
+            .Pipe(JsonConvert.DeserializeObject)
+            .Pipe(it => JsonConvert.SerializeObject(it, Formatting.Indented));
+    }
     public class DirectoryNavigator
     {
         private readonly IAuthenticator _authenticator;
@@ -30,17 +37,17 @@ namespace Swync.core.Onedrive.Directory
                 request.Headers.Add("Authorization", $"bearer {code.AccessToken}");
                 var response = await client.SendAsync(request);
                 var payload = await response.Content.ReadAsStringAsync();
-                var deserialized = JsonConvert.DeserializeObject<DrivesContainer>(payload);
+                var deserialized = JsonConvert.DeserializeObject<Container<OnedriveDrive>>(payload);
                 return deserialized.Value;
             }
         }
 
-        public async Task<IEnumerable<OnedriveDirectory>> GetDirectories(OnedriveDrive drive)
+        public async Task<IEnumerable<OnedriveItem>> GetItems(OnedriveDrive drive)
         {
             var code = await _authenticator.GetAccessTokenAsync();
             using (var client = new HttpClient())
             {
-                var url = $"https://graph.microsoft.com/v1.0/me/drives/{drive.Id}/root/children";
+                var url = $"https://graph.microsoft.com/v1.0/me/drives/{drive.id}/root/children";
                 var request = new HttpRequestMessage
                 {
                     RequestUri = new Uri(url),
@@ -49,14 +56,17 @@ namespace Swync.core.Onedrive.Directory
                 request.Headers.Add("Authorization", $"bearer {code.AccessToken}");
                 var response = await client.SendAsync(request);
                 var payload = await response.Content.ReadAsStringAsync();
-                throw new NotImplementedException();
+                return payload
+                    .Pipe(JsonConvert.DeserializeObject<Container<OnedriveItem>>)
+                    .Value;
             }
         }
 
-        private class DrivesContainer
+        private class Container<T>
         {
             [JsonProperty("value")]
-            public IEnumerable<OnedriveDrive> Value { get; set; }
+            public IEnumerable<T> Value { get; set; }
+            
         }
     }
 }
