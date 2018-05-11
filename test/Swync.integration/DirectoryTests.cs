@@ -32,7 +32,7 @@ namespace Swync.integration
         }
 
         [Fact]
-        public async Task CanGetListOfDirectories()
+        public async Task CanGetListOfChildItemsInRootOfDrive()
         {
             var drives = await _sut.GetDrivesAsync();
             var drive = drives.TakeRandom();

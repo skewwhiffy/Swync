@@ -56,6 +56,7 @@ namespace Swync.core.Onedrive.Items
                 request.Headers.Add("Authorization", $"bearer {code.AccessToken}");
                 var response = await client.SendAsync(request);
                 var payload = await response.Content.ReadAsStringAsync();
+                var pretty = payload.PrettyJson();
                 return payload
                     .Pipe(JsonConvert.DeserializeObject<Container<OnedriveItem>>)
                     .Value;

@@ -1,5 +1,4 @@
-﻿
-// ReSharper disable ClassNeverInstantiated.Global
+﻿// ReSharper disable ClassNeverInstantiated.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable InconsistentNaming
 namespace Swync.core.Onedrive.Items
@@ -8,19 +7,8 @@ namespace Swync.core.Onedrive.Items
     {
         public string id { get; set; }
         public string driveType { get; set; }
-        public OnedriveDriveOwner owner { get; set; }
+        public OnedriveActor owner { get; set; }
         public OnedriveQuota quota { get; set; }
-    }
-
-    public class OnedriveDriveOwner
-    {
-        public OnedriveDriveUser user { get; set; }
-    }
-
-    public class OnedriveDriveUser
-    {
-        public string id { get; set; }
-        public string displayName { get; set; }
     }
 
     public class OnedriveQuota
