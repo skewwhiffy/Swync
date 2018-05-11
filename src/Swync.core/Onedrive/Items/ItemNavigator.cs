@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -8,12 +7,6 @@ using Swync.core.Onedrive.Authentication;
 
 namespace Swync.core.Onedrive.Items
 {
-    public static class JsonExtensions
-    {
-        public static string PrettyJson(this string json) => json
-            .Pipe(JsonConvert.DeserializeObject)
-            .Pipe(it => JsonConvert.SerializeObject(it, Formatting.Indented));
-    }
     public class DirectoryNavigator
     {
         private readonly IAuthenticator _authenticator;
@@ -23,7 +16,7 @@ namespace Swync.core.Onedrive.Items
             _authenticator = authenticator;
         }
 
-        public async Task<IEnumerable<OnedriveDrive>> GetDrivesAsync()
+        public async Task<OnedriveContainer<OnedriveDrive>> GetDrivesAsync()
         {
             var code = await _authenticator.GetAccessTokenAsync();
             using (var client = new HttpClient())
@@ -37,12 +30,11 @@ namespace Swync.core.Onedrive.Items
                 request.Headers.Add("Authorization", $"bearer {code.AccessToken}");
                 var response = await client.SendAsync(request);
                 var payload = await response.Content.ReadAsStringAsync();
-                var deserialized = JsonConvert.DeserializeObject<Container<OnedriveDrive>>(payload);
-                return deserialized.Value;
+                return JsonConvert.DeserializeObject<OnedriveContainer<OnedriveDrive>>(payload);
             }
         }
 
-        public async Task<IEnumerable<OnedriveItem>> GetItems(OnedriveDrive drive)
+        public async Task<OnedriveContainer<OnedriveItem>> GetItems(OnedriveDrive drive)
         {
             var code = await _authenticator.GetAccessTokenAsync();
             using (var client = new HttpClient())
@@ -56,18 +48,9 @@ namespace Swync.core.Onedrive.Items
                 request.Headers.Add("Authorization", $"bearer {code.AccessToken}");
                 var response = await client.SendAsync(request);
                 var payload = await response.Content.ReadAsStringAsync();
-                var pretty = payload.PrettyJson();
                 return payload
-                    .Pipe(JsonConvert.DeserializeObject<Container<OnedriveItem>>)
-                    .Value;
+                    .Pipe(JsonConvert.DeserializeObject<OnedriveContainer<OnedriveItem>>);
             }
-        }
-
-        private class Container<T>
-        {
-            [JsonProperty("value")]
-            public IEnumerable<T> Value { get; set; }
-            
         }
     }
 }

@@ -26,22 +26,20 @@ namespace Swync.integration
         {
             var drives = await _sut.GetDrivesAsync();
 
-            var drivesList = drives.ToList();
-            _output.WriteJson(drivesList);
-            drivesList.Should().NotBeEmpty();
+            _output.WriteJson(drives);
+            drives.value.Should().NotBeEmpty();
         }
 
         [Fact]
         public async Task CanGetListOfChildItemsInRootOfDrive()
         {
             var drives = await _sut.GetDrivesAsync();
-            var drive = drives.TakeRandom();
+            var drive = drives.value.TakeRandom();
             
             var directories = await _sut.GetItems(drive);
 
-            var directoriesList = directories.ToList();
-            _output.WriteJson(directoriesList);
-            directoriesList.Should().NotBeEmpty();
+            _output.WriteJson(directories);
+            directories.value.Should().NotBeEmpty();
         }
     }
 }
