@@ -2,7 +2,7 @@
 
 namespace Swync.core.Onedrive.Directory
 {
-    public class Drive
+    public class OnedriveDrive
     {
         [JsonProperty("id")]
         public string Id { get; set; }

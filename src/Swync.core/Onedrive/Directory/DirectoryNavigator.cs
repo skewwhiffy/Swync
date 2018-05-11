@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -17,7 +16,7 @@ namespace Swync.core.Onedrive.Directory
             _authenticator = authenticator;
         }
 
-        public async Task<IEnumerable<Drive>> GetDrivesAsync()
+        public async Task<IEnumerable<OnedriveDrive>> GetDrivesAsync()
         {
             var code = await _authenticator.GetAccessTokenAsync();
             using (var client = new HttpClient())
@@ -36,10 +35,28 @@ namespace Swync.core.Onedrive.Directory
             }
         }
 
+        public async Task<IEnumerable<OnedriveDirectory>> GetDirectories(OnedriveDrive drive)
+        {
+            var code = await _authenticator.GetAccessTokenAsync();
+            using (var client = new HttpClient())
+            {
+                var url = $"https://graph.microsoft.com/v1.0/me/drives/{drive.Id}/root/children";
+                var request = new HttpRequestMessage
+                {
+                    RequestUri = new Uri(url),
+                    Method = HttpMethod.Get
+                };
+                request.Headers.Add("Authorization", $"bearer {code.AccessToken}");
+                var response = await client.SendAsync(request);
+                var payload = await response.Content.ReadAsStringAsync();
+                throw new NotImplementedException();
+            }
+        }
+
         private class DrivesContainer
         {
             [JsonProperty("value")]
-            public IEnumerable<Drive> Value { get; set; }
+            public IEnumerable<OnedriveDrive> Value { get; set; }
         }
     }
 }
