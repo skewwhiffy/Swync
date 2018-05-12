@@ -13,4 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Swync.core\Swync.core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Interceptors" />
+  </ItemGroup>
 </Project>

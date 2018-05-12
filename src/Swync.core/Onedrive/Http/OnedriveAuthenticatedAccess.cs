@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Swync.core.Functional;
@@ -11,15 +12,18 @@ namespace Swync.core.Onedrive.Http
     public class OnedriveAuthenticatedAccess : IOnedriveAuthenticatedAccess
     {
         private readonly IAuthenticator _authenticator;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly string _baseUrl;
 
-        public OnedriveAuthenticatedAccess(IAuthenticator authenticator)
-        {
-            _authenticator = authenticator;
+        public OnedriveAuthenticatedAccess(
+            IAuthenticator authenticator,
+            IHttpClientFactory httpClientFactory)
+        { _authenticator = authenticator;
+            _httpClientFactory = httpClientFactory;
             _baseUrl = "https://graph.microsoft.com/v1.0/me/";
         }
 
-        public async Task<T> GetAsync<T>(string relativeUrl)
+        public async Task<T> GetAsync<T>(string relativeUrl, CancellationToken ct)
         {
             var uri = new[] {_baseUrl, relativeUrl}
                 .Select(it => it.Trim('/'))
@@ -32,9 +36,9 @@ namespace Swync.core.Onedrive.Http
                 Method = HttpMethod.Get
             };
             request.Headers.Add("Authorization", $"bearer {code.AccessToken}");
-            using (var client = new HttpClient())
+            using (var client = _httpClientFactory.GetClient())
             {
-                var response = await client.SendAsync(request);
+                var response = await client.SendAsync(request, ct);
                 var payload = await response.Content.ReadAsStringAsync();
                 return JsonConvert.DeserializeObject<T>(payload);
             }
@@ -43,6 +47,6 @@ namespace Swync.core.Onedrive.Http
 
     public interface IOnedriveAuthenticatedAccess
     {
-        Task<T> GetAsync<T>(string relativeUrl);
+        Task<T> GetAsync<T>(string relativeUrl, CancellationToken ct);
     }
 }

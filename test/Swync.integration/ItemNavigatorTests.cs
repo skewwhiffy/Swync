@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Swync.core.Onedrive.Authentication;
@@ -17,7 +18,8 @@ namespace Swync.integration
         public ItemNavigatorTests(ITestOutputHelper output)
         {
             IAuthenticator authenticator = new Authenticator();
-            IOnedriveAuthenticatedAccess access = new OnedriveAuthenticatedAccess(authenticator);
+            IHttpClientFactory httpClientFactory = new HttpClientFactory();
+            IOnedriveAuthenticatedAccess access = new OnedriveAuthenticatedAccess(authenticator, httpClientFactory);
             _sut = new ItemNavigator(access);
             _output = output;
         }
@@ -25,7 +27,7 @@ namespace Swync.integration
         [Fact]
         public async Task CanGetListOfDrives()
         {
-            var drives = await _sut.GetDrivesAsync();
+            var drives = await _sut.GetDrivesAsync(CancellationToken.None);
 
             _output.WriteJson(drives);
             drives.value.Should().NotBeEmpty();
@@ -34,10 +36,10 @@ namespace Swync.integration
         [Fact]
         public async Task CanGetListOfChildItemsInRootOfDrive()
         {
-            var drives = await _sut.GetDrivesAsync();
+            var drives = await _sut.GetDrivesAsync(CancellationToken.None);
             var drive = drives.value.TakeRandom();
             
-            var directories = await _sut.GetItems(drive);
+            var directories = await _sut.GetItems(drive, CancellationToken.None);
 
             _output.WriteJson(directories);
             directories.value.Should().NotBeEmpty();
