@@ -7,10 +7,10 @@ namespace Swync.test.common.Extensions
     public static class XunitExtensions
     {
         public static void WriteJson<T>(this ITestOutputHelper output, T item) => item
-            .Pipe(Serialize)
+            .Pipe(SerializeToPrettyJson)
             .Pipe(output.WriteLine);
 
-        private static string Serialize<T>(T it)
+        public static string SerializeToPrettyJson<T>(this T it)
         {
             var settings = new JsonSerializerSettings
             {
