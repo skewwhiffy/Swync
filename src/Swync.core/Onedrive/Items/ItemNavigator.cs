@@ -17,7 +17,10 @@ namespace Swync.core.Onedrive.Items
         public Task<OnedriveContainer<OnedriveDrive>> GetDrivesAsync(CancellationToken ct) =>
             _access.GetAsync<OnedriveContainer<OnedriveDrive>>("drives", ct);
 
-        public Task<OnedriveContainer<OnedriveItem>> GetItems(OnedriveDrive drive, CancellationToken ct) =>
+        public Task<OnedriveContainer<OnedriveItem>> GetItemsAsync(OnedriveDrive drive, CancellationToken ct) =>
             _access.GetAsync<OnedriveContainer<OnedriveItem>>($"drives/{drive.id}/root/children", ct);
+
+        public Task<OnedriveContainer<OnedriveItem>> GetChildrenAsync(string parentId, CancellationToken ct) =>
+            _access.GetAsync<OnedriveContainer<OnedriveItem>>($"drive/items/{parentId}/children", ct);
     }
 }

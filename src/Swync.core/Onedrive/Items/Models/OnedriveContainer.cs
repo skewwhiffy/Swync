@@ -11,8 +11,10 @@ namespace Swync.core.Onedrive.Items.Models
 {
     public class OnedriveContainer<T>
     {
-            [JsonProperty("@odata.context")]
-            public Uri OdataContext { get; set; }
-            public IList<T> value { get; set; }
+        [JsonProperty("@odata.context")]
+        public Uri OdataContext { get; set; }
+        [JsonProperty("@odata.nextLink")]
+        public Uri OdataNextLink { get; set; }
+        public IList<T> value { get; set; }
     }
 }
