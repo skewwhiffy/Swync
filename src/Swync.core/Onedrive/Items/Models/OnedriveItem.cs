@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 // ReSharper disable ClassNeverInstantiated.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable InconsistentNaming
-namespace Swync.core.Onedrive.Items
+namespace Swync.core.Onedrive.Items.Models
 {
     public class OnedriveItem
     {

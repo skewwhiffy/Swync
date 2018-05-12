@@ -2,11 +2,12 @@
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable InconsistentNaming
 // ReSharper disable CollectionNeverUpdated.Global
+
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Swync.core.Onedrive.Items
+namespace Swync.core.Onedrive.Items.Models
 {
     public class OnedriveContainer<T>
     {

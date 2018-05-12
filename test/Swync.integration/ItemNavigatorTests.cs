@@ -1,7 +1,7 @@
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Swync.core.Onedrive.Authentication;
+using Swync.core.Onedrive.Http;
 using Swync.core.Onedrive.Items;
 using Swync.test.common.Extensions;
 using Xunit;
@@ -9,15 +9,16 @@ using Xunit.Abstractions;
 
 namespace Swync.integration
 {
-    public class DirectoryTests : IntegrationTestBase
+    public class ItemNavigatorTests : IntegrationTestBase
     {
         private readonly ITestOutputHelper _output;
-        private readonly DirectoryNavigator _sut;
+        private readonly ItemNavigator _sut;
 
-        public DirectoryTests(ITestOutputHelper output)
+        public ItemNavigatorTests(ITestOutputHelper output)
         {
             IAuthenticator authenticator = new Authenticator();
-            _sut = new DirectoryNavigator(authenticator);
+            IOnedriveAuthenticatedAccess access = new OnedriveAuthenticatedAccess(authenticator);
+            _sut = new ItemNavigator(access);
             _output = output;
         }
         

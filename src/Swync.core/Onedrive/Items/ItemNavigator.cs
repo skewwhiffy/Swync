@@ -1,56 +1,22 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Swync.core.Functional;
-using Swync.core.Onedrive.Authentication;
+﻿using System.Threading.Tasks;
+using Swync.core.Onedrive.Http;
+using Swync.core.Onedrive.Items.Models;
 
 namespace Swync.core.Onedrive.Items
 {
-    public class DirectoryNavigator
+    public class ItemNavigator
     {
-        private readonly IAuthenticator _authenticator;
+        private readonly IOnedriveAuthenticatedAccess _access;
 
-        public DirectoryNavigator(IAuthenticator authenticator)
+        public ItemNavigator(IOnedriveAuthenticatedAccess access)
         {
-            _authenticator = authenticator;
+            _access = access;
         }
 
-        public async Task<OnedriveContainer<OnedriveDrive>> GetDrivesAsync()
-        {
-            var code = await _authenticator.GetAccessTokenAsync();
-            using (var client = new HttpClient())
-            {
-                var url = "https://graph.microsoft.com/v1.0/me/drives";
-                var request = new HttpRequestMessage
-                {
-                    RequestUri = new Uri(url),
-                    Method = HttpMethod.Get
-                };
-                request.Headers.Add("Authorization", $"bearer {code.AccessToken}");
-                var response = await client.SendAsync(request);
-                var payload = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<OnedriveContainer<OnedriveDrive>>(payload);
-            }
-        }
+        public Task<OnedriveContainer<OnedriveDrive>> GetDrivesAsync() =>
+            _access.GetAsync<OnedriveContainer<OnedriveDrive>>("drives");
 
-        public async Task<OnedriveContainer<OnedriveItem>> GetItems(OnedriveDrive drive)
-        {
-            var code = await _authenticator.GetAccessTokenAsync();
-            using (var client = new HttpClient())
-            {
-                var url = $"https://graph.microsoft.com/v1.0/me/drives/{drive.id}/root/children";
-                var request = new HttpRequestMessage
-                {
-                    RequestUri = new Uri(url),
-                    Method = HttpMethod.Get
-                };
-                request.Headers.Add("Authorization", $"bearer {code.AccessToken}");
-                var response = await client.SendAsync(request);
-                var payload = await response.Content.ReadAsStringAsync();
-                return payload
-                    .Pipe(JsonConvert.DeserializeObject<OnedriveContainer<OnedriveItem>>);
-            }
-        }
+        public Task<OnedriveContainer<OnedriveItem>> GetItems(OnedriveDrive drive) =>
+            _access.GetAsync<OnedriveContainer<OnedriveItem>>($"drives/{drive.id}/root/children");
     }
 }
