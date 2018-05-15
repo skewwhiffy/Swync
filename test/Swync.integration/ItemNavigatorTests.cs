@@ -73,7 +73,7 @@ namespace Swync.integration
         }
 
         [Fact]
-        public async Task CanCreateFolderAtRootOfDrive()
+        public async Task CanCreateAndDeleteFolderAtRootOfDrive()
         {
             var drives = await _sut.GetDrivesAsync(CancellationToken.None);
             _interceptingClient.ClearCache();
@@ -81,22 +81,24 @@ namespace Swync.integration
             foreach (var drive in drivesToTest)
             {
                 var directoryName = $"__swync_test_folder_{Guid.NewGuid()}";
-                await CanCreateFolderAtRootOfDrive(drive, directoryName);
+                var item = await CanCreateFolderAtRootOfDriveAsync(drive, directoryName);
 
-                //await CanDeleteFolderAtRootOfDrive(drive, directoryName);
+                await CanDeleteFolderAtRootOfDrive(drive, item.id);
             }
         }
 
-        private async Task CanCreateFolderAtRootOfDrive(OnedriveDrive drive, string directoryName)
+        private async Task<OnedriveItem> CanCreateFolderAtRootOfDriveAsync(OnedriveDrive drive, string directoryName)
         {
             var responseItem = await _sut.CreateDirectory(drive, directoryName, CancellationToken.None);
             var response = _interceptingClient.Cache.Values.Single().PrettyJson();
             responseItem.SerializeToPrettyJson().Should().Be(response);
             _interceptingClient.ClearCache();
+            return responseItem;
         }
 
-        private async Task CanDeleteFolderAtRootOfDrive(OnedriveDrive drive, string directoryName)
+        private async Task CanDeleteFolderAtRootOfDrive(OnedriveDrive drive, string itemId)
         {
+            // https://graph.microsoft.com/v1.0/me/drive/items/F1CB4FA1C18121AF!203733
             throw new NotImplementedException();
         }
     }
