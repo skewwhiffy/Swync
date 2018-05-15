@@ -14,6 +14,6 @@
     <ProjectReference Include="..\..\src\Swync.core\Swync.core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Interceptors" />
+    <PackageReference Include="System.Collections.Immutable" Version="1.4.0" />
   </ItemGroup>
 </Project>
