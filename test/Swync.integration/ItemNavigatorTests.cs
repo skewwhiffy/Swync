@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,20 +10,25 @@ using Swync.core.Functional;
 using Swync.core.Onedrive.Authentication;
 using Swync.core.Onedrive.Http;
 using Swync.core.Onedrive.Items;
+using Swync.core.Onedrive.Items.Models;
 using Swync.test.common.Extensions;
 using Swync.test.common.Interceptors;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Swync.integration
 {
-    public class ItemNavigatorTests : IntegrationTestBase
+    public class ItemNavigatorTests
     {
+        private readonly ITestOutputHelper _output;
+        
         private readonly bool _exhaustive;
         private readonly ItemNavigator _sut;
         private readonly HttpInterceptor _interceptingClient;
 
-        public ItemNavigatorTests()
+        public ItemNavigatorTests(ITestOutputHelper output)
         {
+            _output = output;
             IAuthenticator authenticator = new Authenticator();
             var mockClientFactory = new Mock<IHttpClientFactory>();
             _interceptingClient = new HttpInterceptor();
@@ -63,6 +70,34 @@ namespace Swync.integration
                     _interceptingClient.ClearCache();
                 }
             }
+        }
+
+        [Fact]
+        public async Task CanCreateFolderAtRootOfDrive()
+        {
+            var drives = await _sut.GetDrivesAsync(CancellationToken.None);
+            _interceptingClient.ClearCache();
+            var drivesToTest = _exhaustive ? drives.value : new[] {drives.value.TakeRandom()};
+            foreach (var drive in drivesToTest)
+            {
+                var directoryName = $"__swync_test_folder_{Guid.NewGuid()}";
+                await CanCreateFolderAtRootOfDrive(drive, directoryName);
+
+                //await CanDeleteFolderAtRootOfDrive(drive, directoryName);
+            }
+        }
+
+        private async Task CanCreateFolderAtRootOfDrive(OnedriveDrive drive, string directoryName)
+        {
+            var responseItem = await _sut.CreateDirectory(drive, directoryName, CancellationToken.None);
+            var response = _interceptingClient.Cache.Values.Single().PrettyJson();
+            responseItem.SerializeToPrettyJson().Should().Be(response);
+            _interceptingClient.ClearCache();
+        }
+
+        private async Task CanDeleteFolderAtRootOfDrive(OnedriveDrive drive, string directoryName)
+        {
+            throw new NotImplementedException();
         }
     }
 }

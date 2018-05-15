@@ -22,5 +22,16 @@ namespace Swync.core.Onedrive.Items
 
         public Task<OnedriveContainer<OnedriveItem>> GetChildrenAsync(string parentId, CancellationToken ct) =>
             _access.GetAsync<OnedriveContainer<OnedriveItem>>($"drive/items/{parentId}/children", ct);
+
+        public async Task<OnedriveItem> CreateDirectory(OnedriveDrive drive, string name, CancellationToken ct)
+        {
+            var item = new OnedriveItem
+            {
+                name = name,
+                folder = new OnedriveItemFolder()
+            };
+                
+            return await _access.PostAsync<OnedriveItem, OnedriveItem>($"drives/{drive.id}/root/children", item, ct);
+        }
     }
 }

@@ -8,15 +8,17 @@ namespace Swync.core.Onedrive.Items.Models
 {
     public class OnedriveItem
     {
+        [JsonProperty("@odata.context")]
+        public Uri odataContext { get; set; }
         [JsonProperty("@microsoft.graph.downloadUrl")]
         public Uri microsoftGraphDownloadUrl { get; set; }
-        public DateTime createdDateTime { get; set; }
+        public DateTime? createdDateTime { get; set; }
         public string cTag { get; set; }
         public string eTag { get; set; }
         public string id { get; set; }
-        public DateTime lastModifiedDateTime { get; set; }
+        public DateTime? lastModifiedDateTime { get; set; }
         public string name { get; set; }
-        public long size { get; set; }
+        public long? size { get; set; }
         public Uri webUrl { get; set; }
         public OnedriveActor createdBy { get; set; }
         public OnedriveActor lastModifiedBy { get; set; }
@@ -132,7 +134,7 @@ namespace Swync.core.Onedrive.Items.Models
 
     public class OnedriveItemFolder
     {
-        public long childCount { get; set; }
+        public long? childCount { get; set; }
         public OnedriveItemFolderView view { get; set; }
     }
 

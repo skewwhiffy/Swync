@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -43,10 +44,44 @@ namespace Swync.core.Onedrive.Http
                 return JsonConvert.DeserializeObject<T>(payload);
             }
         }
+
+        public async Task<TResponsePayload> PostAsync<TPayload, TResponsePayload>(string relativeUrl, TPayload payload, CancellationToken ct)
+        {
+            var uri = new[] {_baseUrl, relativeUrl}
+                .Select(it => it.Trim('/'))
+                .Join("/")
+                .Pipe(it => new Uri(it));
+            var code = await _authenticator.GetAccessTokenAsync();
+            var request = new HttpRequestMessage
+            {
+                RequestUri = uri,
+                Method = HttpMethod.Post,
+                Content = SerializeToJson(payload)
+            };
+            request.Headers.Add("Authorization", $"bearer {code.AccessToken}");
+                new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
+            using (var client = _httpClientFactory.GetClient())
+            {
+                var response = await client.SendAsync(request, ct);
+                var responsePayload = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<TResponsePayload>(responsePayload);
+            }
+        }
+
+        private StringContent SerializeToJson<T>(T it)
+        {
+            var settings = new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore
+            };
+            var jsonPayload = JsonConvert.SerializeObject(it, Formatting.None, settings);
+            return new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+        }
     }
 
     public interface IOnedriveAuthenticatedAccess
     {
         Task<T> GetAsync<T>(string relativeUrl, CancellationToken ct);
+        Task<TResponsePayload> PostAsync<TPayload, TResponsePayload>(string relativeUrl, TPayload payload, CancellationToken ct);
     }
 }
