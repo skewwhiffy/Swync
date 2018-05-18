@@ -59,12 +59,31 @@ namespace Swync.core.Onedrive.Http
                 Content = SerializeToJson(payload)
             };
             request.Headers.Add("Authorization", $"bearer {code.AccessToken}");
-                new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
             using (var client = _httpClientFactory.GetClient())
             {
                 var response = await client.SendAsync(request, ct);
                 var responsePayload = await response.Content.ReadAsStringAsync();
                 return JsonConvert.DeserializeObject<TResponsePayload>(responsePayload);
+            }
+        }
+
+        public async Task DeleteAsync(string relativeUrl, CancellationToken ct)
+        {
+            var uri = new[] {_baseUrl, relativeUrl}
+                .Select(it => it.Trim('/'))
+                .Join("/")
+                .Pipe(it => new Uri(it));
+            var code = await _authenticator.GetAccessTokenAsync();
+            var request = new HttpRequestMessage
+            {
+                RequestUri = uri,
+                Method = HttpMethod.Delete
+            };
+            request.Headers.Add("Authorization", $"bearer {code.AccessToken}");
+            using (var client = _httpClientFactory.GetClient())
+            {
+                var response = await client.SendAsync(request, ct);
+                var responsePayload = await response.Content.ReadAsStringAsync();
             }
         }
 
@@ -83,5 +102,6 @@ namespace Swync.core.Onedrive.Http
     {
         Task<T> GetAsync<T>(string relativeUrl, CancellationToken ct);
         Task<TResponsePayload> PostAsync<TPayload, TResponsePayload>(string relativeUrl, TPayload payload, CancellationToken ct);
+        Task DeleteAsync(string relativeUrl, CancellationToken ct);
     }
 }

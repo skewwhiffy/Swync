@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,21 +13,17 @@ using Swync.core.Onedrive.Items.Models;
 using Swync.test.common.Extensions;
 using Swync.test.common.Interceptors;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Swync.integration
 {
     public class ItemNavigatorTests
     {
-        private readonly ITestOutputHelper _output;
-        
         private readonly bool _exhaustive;
         private readonly ItemNavigator _sut;
         private readonly HttpInterceptor _interceptingClient;
 
-        public ItemNavigatorTests(ITestOutputHelper output)
+        public ItemNavigatorTests()
         {
-            _output = output;
             IAuthenticator authenticator = new Authenticator();
             var mockClientFactory = new Mock<IHttpClientFactory>();
             _interceptingClient = new HttpInterceptor();
@@ -83,23 +78,29 @@ namespace Swync.integration
                 var directoryName = $"__swync_test_folder_{Guid.NewGuid()}";
                 var item = await CanCreateFolderAtRootOfDriveAsync(drive, directoryName);
 
-                await CanDeleteFolderAtRootOfDrive(drive, item.id);
+                await CanDeleteFolderAtRootOfDrive(drive, directoryName, item.id);
+
             }
         }
 
         private async Task<OnedriveItem> CanCreateFolderAtRootOfDriveAsync(OnedriveDrive drive, string directoryName)
         {
-            var responseItem = await _sut.CreateDirectory(drive, directoryName, CancellationToken.None);
+            var responseItem = await _sut.CreateDirectoryAsync(drive, directoryName, CancellationToken.None);
             var response = _interceptingClient.Cache.Values.Single().PrettyJson();
             responseItem.SerializeToPrettyJson().Should().Be(response);
+            var items = await _sut.GetItemsAsync(drive, CancellationToken.None);
+            var item = items.value.Single(it => it.name == directoryName);
+            item.folder.Should().NotBeNull();
             _interceptingClient.ClearCache();
             return responseItem;
         }
 
-        private async Task CanDeleteFolderAtRootOfDrive(OnedriveDrive drive, string itemId)
+        private async Task CanDeleteFolderAtRootOfDrive(OnedriveDrive drive, string directoryName,  string itemId)
         {
-            // https://graph.microsoft.com/v1.0/me/drive/items/F1CB4FA1C18121AF!203733
-            throw new NotImplementedException();
+            await _sut.DeleteItemAsync(drive, itemId, CancellationToken.None);
+            var items = await _sut.GetItemsAsync(drive, CancellationToken.None);
+            items.value.Where(it => it.name == directoryName).Should().BeEmpty();
+            _interceptingClient.ClearCache();
         }
     }
 }
