@@ -11,7 +11,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Swync.core\Swync.core.csproj" />
+    <ProjectReference Include="..\..\src\Swync.Core\Swync.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Collections.Immutable" Version="1.4.0" />

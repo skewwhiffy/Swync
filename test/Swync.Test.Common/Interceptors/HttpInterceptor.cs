@@ -3,9 +3,9 @@ using System.Collections.Immutable;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Swync.core.Onedrive.Http;
+using Swync.Core.Onedrive.Http;
 
-namespace Swync.test.common.Interceptors
+namespace Swync.Test.Common.Interceptors
 {
     public class HttpInterceptor : IHttpClient
     {

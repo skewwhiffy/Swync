@@ -5,16 +5,16 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Moq;
-using Swync.core.Functional;
-using Swync.core.Onedrive.Authentication;
-using Swync.core.Onedrive.Http;
-using Swync.core.Onedrive.Items;
-using Swync.core.Onedrive.Items.Models;
-using Swync.test.common.Extensions;
-using Swync.test.common.Interceptors;
+using Swync.Core.Functional;
+using Swync.Core.Onedrive.Authentication;
+using Swync.Core.Onedrive.Http;
+using Swync.Core.Onedrive.Items;
+using Swync.Core.Onedrive.Items.Models;
+using Swync.Test.Common.Extensions;
+using Swync.Test.Common.Interceptors;
 using Xunit;
 
-namespace Swync.integration
+namespace Swync.Integration
 {
     public class ItemNavigatorTests
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Swync.test.common.Extensions
+namespace Swync.Test.Common.Extensions
 {
     public static class CollectionsExtensions
     {

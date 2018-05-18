@@ -5,10 +5,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Swync.core.Functional;
-using Swync.core.Onedrive.Authentication;
+using Swync.Core.Functional;
+using Swync.Core.Onedrive.Authentication;
 
-namespace Swync.core.Onedrive.Http
+namespace Swync.Core.Onedrive.Http
 {
     public class OnedriveAuthenticatedAccess : IOnedriveAuthenticatedAccess
     {
@@ -83,7 +83,7 @@ namespace Swync.core.Onedrive.Http
             using (var client = _httpClientFactory.GetClient())
             {
                 var response = await client.SendAsync(request, ct);
-                var responsePayload = await response.Content.ReadAsStringAsync();
+                await response.Content.ReadAsStringAsync();
             }
         }
 

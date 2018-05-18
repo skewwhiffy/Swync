@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace Swync.core.Onedrive.Authentication
+namespace Swync.Core.Onedrive.Authentication
 {
     public class RefreshTokenDetails
     {

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Swync.core.Onedrive.Authentication
+namespace Swync.Core.Onedrive.Authentication
 {
     public interface IAuthenticator
     {

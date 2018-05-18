@@ -1,4 +1,4 @@
-﻿namespace Swync.core.Credentials
+﻿namespace Swync.Core.Credentials
 {
     public class OnedriveCredentials
     {

@@ -12,9 +12,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Newtonsoft.Json;
-using Swync.core.Functional;
+using Swync.Core.Functional;
 
-namespace Swync.core.Onedrive.Authentication
+namespace Swync.Core.Onedrive.Authentication
 {
     public class Authenticator : IAuthenticator
     {
@@ -164,7 +164,7 @@ namespace Swync.core.Onedrive.Authentication
             }
             catch
             {
-                // hack because of this: https://github.com/dotnet/corefx/issues/10361
+                // hack because of this: https://github.com/dotnet.Corefx/issues/10361
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     url = url.Replace("&", "^&");

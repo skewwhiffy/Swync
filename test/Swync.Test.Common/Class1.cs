@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Swync.test.common
+namespace Swync.Test.Common
 {
     public class Class1
     {

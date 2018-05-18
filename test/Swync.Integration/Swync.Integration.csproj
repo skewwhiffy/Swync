@@ -14,8 +14,8 @@
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Swync.core\Swync.core.csproj" />
-    <ProjectReference Include="..\Swync.test.common\Swync.test.common.csproj" />
+    <ProjectReference Include="..\..\src\Swync.Core\Swync.Core.csproj" />
+    <ProjectReference Include="..\Swync.Test.Common\Swync.Test.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="appsettings.json" />

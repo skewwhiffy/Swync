@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Swync.core.Onedrive.Http
+namespace Swync.Core.Onedrive.Http
 {
     public class HttpClientFactory : IHttpClientFactory
     {

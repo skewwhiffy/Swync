@@ -1,9 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Swync.core.Onedrive.Http;
-using Swync.core.Onedrive.Items.Models;
+using Swync.Core.Onedrive.Http;
+using Swync.Core.Onedrive.Items.Models;
 
-namespace Swync.core.Onedrive.Items
+namespace Swync.Core.Onedrive.Items
 {
     public class ItemNavigator
     {

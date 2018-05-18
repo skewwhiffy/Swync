@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Swync.core.Functional
+namespace Swync.Core.Functional
 {
     public static class CollectionExtensions
     {

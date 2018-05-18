@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Swync.core.Functional
+namespace Swync.Core.Functional
 {
     public struct Maybe<T> where T:class
     {

@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
-using Swync.core.Functional;
+using Swync.Core.Functional;
 using Xunit.Abstractions;
 
-namespace Swync.test.common.Extensions
+namespace Swync.Test.Common.Extensions
 {
     public static class XunitExtensions
     {

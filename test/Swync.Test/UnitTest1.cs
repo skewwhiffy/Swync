@@ -1,7 +1,6 @@
-using System;
 using Xunit;
 
-namespace Swync.test
+namespace Swync.Test
 {
     public class UnitTest1
     {

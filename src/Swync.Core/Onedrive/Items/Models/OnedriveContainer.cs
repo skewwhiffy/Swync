@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Swync.core.Onedrive.Items.Models
+namespace Swync.Core.Onedrive.Items.Models
 {
     public class OnedriveContainer<T>
     {
