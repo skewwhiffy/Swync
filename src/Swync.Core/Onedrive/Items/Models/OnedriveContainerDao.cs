@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace Swync.Core.Onedrive.Items.Models
 {
-    public class OnedriveContainer<T>
+    public class OnedriveContainerDao<T>
     {
         [JsonProperty("@odata.context")]
         public Uri OdataContext { get; set; }
