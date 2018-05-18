@@ -5,7 +5,14 @@ using Swync.Core.Onedrive.Items.Models;
 
 namespace Swync.Core.Onedrive.Items
 {
-    public class ItemNavigator
+    public interface IItemNavigator
+    {
+        Task<OnedriveContainerDao<OnedriveDriveDao>> GetDrivesAsync(CancellationToken ct);
+        Task<OnedriveContainerDao<OnedriveItemDao>> GetItemsAsync(string driveId, CancellationToken ct);
+        Task<OnedriveContainerDao<OnedriveItemDao>> GetChildrenAsync(string parentId, CancellationToken ct);
+    }
+    
+    public class ItemNavigator : IItemNavigator
     {
         private readonly IOnedriveAuthenticatedAccess _access;
 
@@ -14,27 +21,27 @@ namespace Swync.Core.Onedrive.Items
             _access = access;
         }
 
-        public Task<OnedriveContainer<OnedriveDrive>> GetDrivesAsync(CancellationToken ct) =>
-            _access.GetAsync<OnedriveContainer<OnedriveDrive>>("drives", ct);
+        public Task<OnedriveContainerDao<OnedriveDriveDao>> GetDrivesAsync(CancellationToken ct) =>
+            _access.GetAsync<OnedriveContainerDao<OnedriveDriveDao>>("drives", ct);
 
-        public Task<OnedriveContainer<OnedriveItem>> GetItemsAsync(OnedriveDrive drive, CancellationToken ct) =>
-            _access.GetAsync<OnedriveContainer<OnedriveItem>>($"drives/{drive.id}/root/children", ct);
+        public Task<OnedriveContainerDao<OnedriveItemDao>> GetItemsAsync(string driveId, CancellationToken ct) =>
+            _access.GetAsync<OnedriveContainerDao<OnedriveItemDao>>($"drives/{driveId}/root/children", ct);
 
-        public Task<OnedriveContainer<OnedriveItem>> GetChildrenAsync(string parentId, CancellationToken ct) =>
-            _access.GetAsync<OnedriveContainer<OnedriveItem>>($"drive/items/{parentId}/children", ct);
+        public Task<OnedriveContainerDao<OnedriveItemDao>> GetChildrenAsync(string parentId, CancellationToken ct) =>
+            _access.GetAsync<OnedriveContainerDao<OnedriveItemDao>>($"drive/items/{parentId}/children", ct);
 
-        public async Task<OnedriveItem> CreateDirectoryAsync(OnedriveDrive drive, string name, CancellationToken ct)
+        public async Task<OnedriveItemDao> CreateDirectoryAsync(OnedriveDriveDao drive, string name, CancellationToken ct)
         {
-            var item = new OnedriveItem
+            var item = new OnedriveItemDao
             {
                 name = name,
-                folder = new OnedriveItemFolder()
+                folder = new OnedriveItemFolderDao()
             };
                 
-            return await _access.PostAsync<OnedriveItem, OnedriveItem>($"drives/{drive.id}/root/children", item, ct);
+            return await _access.PostAsync<OnedriveItemDao, OnedriveItemDao>($"drives/{drive.id}/root/children", item, ct);
         }
 
-        public async Task DeleteItemAsync(OnedriveDrive drive, string itemId, CancellationToken ct)
+        public async Task DeleteItemAsync(OnedriveDriveDao drive, string itemId, CancellationToken ct)
         {
             await _access.DeleteAsync($"drives/{drive.id}/items/{itemId}", ct);
         }

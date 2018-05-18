@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 // ReSharper disable InconsistentNaming
 namespace Swync.Core.Onedrive.Items.Models
 {
-    public class OnedriveItem
+    public class OnedriveItemDao
     {
         [JsonProperty("@odata.context")]
         public Uri odataContext { get; set; }
@@ -20,35 +20,35 @@ namespace Swync.Core.Onedrive.Items.Models
         public string name { get; set; }
         public long? size { get; set; }
         public Uri webUrl { get; set; }
-        public OnedriveActor createdBy { get; set; }
-        public OnedriveActor lastModifiedBy { get; set; }
-        public OnedriveItemParentReference parentReference { get; set; }
-        public OnedriveItemAudio audio { get; set; }
-        public OnedriveItemFile file { get; set; }
-        public OnedriveItemFileSystemInfo fileSystemInfo { get; set; }
-        public OnedriveItemPackage package { get; set; }
-        public OnedriveItemImage image { get; set; }
-        public OnedriveItemLocation location { get; set; }
-        public OnedriveItemPhoto photo { get; set; }
-        public OnedriveItemFolder folder { get; set; }
-        public OnedriveItemShared shared { get; set; }
-        public OnedriveItemVideo video { get; set; }
-        public OnedriveItemSpecialFolder specialFolder { get; set; }
+        public OnedriveActorDao createdBy { get; set; }
+        public OnedriveActorDao lastModifiedBy { get; set; }
+        public OnedriveItemParentReferenceDao parentReference { get; set; }
+        public OnedriveItemAudioDao audio { get; set; }
+        public OnedriveItemFileDao file { get; set; }
+        public OnedriveItemFileSystemInfoDao fileSystemInfo { get; set; }
+        public OnedriveItemPackageDao package { get; set; }
+        public OnedriveItemImageDao image { get; set; }
+        public OnedriveItemLocationDao location { get; set; }
+        public OnedriveItemPhotoDao photo { get; set; }
+        public OnedriveItemFolderDao folder { get; set; }
+        public OnedriveItemSharedDao shared { get; set; }
+        public OnedriveItemVideoDao video { get; set; }
+        public OnedriveItemSpecialFolderDao specialFolder { get; set; }
     }
 
-    public class OnedriveItemAudio
+    public class OnedriveItemAudioDao
     {
         public long bitrate { get; set; }
         public long duration { get; set; }
         public bool hasDrm { get; set; }
     }
 
-    public class OnedriveItemPackage
+    public class OnedriveItemPackageDao
     {
         public string type { get; set; }
     }
 
-    public class OnedriveItemVideo
+    public class OnedriveItemVideoDao
     {
         public long bitrate { get; set; }
         public long duration { get; set; }
@@ -62,20 +62,20 @@ namespace Swync.Core.Onedrive.Items.Models
         public decimal frameRate { get; set; }
     }
 
-    public class OnedriveItemLocation
+    public class OnedriveItemLocationDao
     {
         public decimal altitude { get; set; }
         public decimal latitude { get; set; }
         public decimal longitude { get; set; }
     }
 
-    public class OnedriveItemImage
+    public class OnedriveItemImageDao
     {
         public long height { get; set; }
         public long width { get; set; }
     }
 
-    public class OnedriveItemPhoto
+    public class OnedriveItemPhotoDao
     {
         public string cameraMake { get; set; }
         public string cameraModel { get; set; }
@@ -87,37 +87,37 @@ namespace Swync.Core.Onedrive.Items.Models
         public long? iso { get; set; }
     }
 
-    public class OnedriveItemFile
+    public class OnedriveItemFileDao
     {
         public string mimeType { get; set; }
         public bool? processingMetadata { get; set; }
-        public OnedriveItemFileHashes hashes { get; set; }
+        public OnedriveItemFileHashesDao hashes { get; set; }
     }
 
-    public class OnedriveItemFileHashes
+    public class OnedriveItemFileHashesDao
     {
         public string crc32Hash { get; set; }
         public string sha1Hash { get; set; }
     }
 
-    public class OnedriveItemSpecialFolder
+    public class OnedriveItemSpecialFolderDao
     {
         public string name { get; set; }
     }
 
-    public class OnedriveItemCreatedByDevice
+    public class OnedriveItemCreatedByDeviceDao
     {
         public string id { get; set; }
     }
 
-    public class OnedriveSync
+    public class OnedriveSyncDao
     {
         [JsonProperty("@odata.type")]
         public string odataType { get; set; }
         public string id { get; set; }
     }
 
-    public class OnedriveItemParentReference
+    public class OnedriveItemParentReferenceDao
     {
         public string driveId { get; set; }
         public string driveType { get; set; }
@@ -126,28 +126,28 @@ namespace Swync.Core.Onedrive.Items.Models
         public string path { get; set; }
     }
 
-    public class OnedriveItemFileSystemInfo
+    public class OnedriveItemFileSystemInfoDao
     {
         public DateTime createdDateTime { get; set; }
         public DateTime lastModifiedDateTime { get; set; }
     }
 
-    public class OnedriveItemFolder
+    public class OnedriveItemFolderDao
     {
         public long? childCount { get; set; }
-        public OnedriveItemFolderView view { get; set; }
+        public OnedriveItemFolderViewDao view { get; set; }
     }
 
-    public class OnedriveItemFolderView
+    public class OnedriveItemFolderViewDao
     {
         public string viewType { get; set; }
         public string sortBy { get; set; }
         public string sortOrder { get; set; }
     }
 
-    public class OnedriveItemShared
+    public class OnedriveItemSharedDao
     {
         public string scope { get; set; }
-        public OnedriveActor owner { get; set; }
+        public OnedriveActorDao owner { get; set; }
     }
 }

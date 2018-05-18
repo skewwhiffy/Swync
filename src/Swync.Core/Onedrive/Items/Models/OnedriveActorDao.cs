@@ -3,15 +3,15 @@
 // ReSharper disable InconsistentNaming
 namespace Swync.Core.Onedrive.Items.Models
 {
-    public class OnedriveActor
+    public class OnedriveActorDao
     {
-        public OnedriveUser application { get; set; }
-        public OnedriveItemCreatedByDevice device { get; set; }
-        public OnedriveUser user { get; set; }
-        public OnedriveSync oneDriveSync { get; set; }
+        public OnedriveUserDao application { get; set; }
+        public OnedriveItemCreatedByDeviceDao device { get; set; }
+        public OnedriveUserDao user { get; set; }
+        public OnedriveSyncDao oneDriveSync { get; set; }
     }
 
-    public class OnedriveUser
+    public class OnedriveUserDao
     {
         public string displayName { get; set; }
         public string id { get; set; }

@@ -3,15 +3,15 @@
 // ReSharper disable InconsistentNaming
 namespace Swync.Core.Onedrive.Items.Models
 {
-    public class OnedriveDrive
+    public class OnedriveDriveDao
     {
         public string id { get; set; }
         public string driveType { get; set; }
-        public OnedriveActor owner { get; set; }
-        public OnedriveQuota quota { get; set; }
+        public OnedriveActorDao owner { get; set; }
+        public OnedriveQuotaDao quota { get; set; }
     }
 
-    public class OnedriveQuota
+    public class OnedriveQuotaDao
     {
         public long deleted { get; set; }
         public long remaining { get; set; }
