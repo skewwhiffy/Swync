@@ -37,14 +37,9 @@ namespace Swync.Integration
         }
 
         [Fact]
-        [igno]
         public async Task GetAllDirectories()
         {
-            var result = await _onedriveClient.GetDirectories(CancellationToken.None);
-            foreach (var directory in result)
-            {
-                _output.WriteLine(directory.Path.Join("/"));
-            }
+            // TODO
         }
     }
 }
