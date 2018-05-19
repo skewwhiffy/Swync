@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,6 +23,15 @@ namespace Swync.Core.Onedrive
             return drives.value.Select(it => it.ToModel()).ToList();
         }
 
+        public async Task CycleThroughDirectoriesAsync(
+            Func<OnedriveDirectory, Task> actionOnDirectoryAsync,
+            Func<Task> actionWhenDoneAsync,
+            CancellationToken ct)
+        {
+            
+        }
+        
+        /*
         public async Task<IList<OnedriveDirectory>> GetDirectories(CancellationToken ct)
         {
             var drives = await GetDrivesAsync(ct);
@@ -72,5 +82,6 @@ namespace Swync.Core.Onedrive
             return result;
             
         }
+        */
     }
 }
