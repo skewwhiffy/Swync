@@ -10,8 +10,8 @@ namespace Swync.Core.Onedrive.Models
             Drive = drive;
             Parent = parent;
             ItemId = itemId;
-            var path = parent.Path;
-            path.Append(name);
+            var path = parent.Path.ToList();
+            path.Add(name);
             Path = path;
             Name = name;
         }
