@@ -24,96 +24,57 @@ namespace Swync.Core.Onedrive.Http
             _httpClientFactory = httpClientFactory;
             _baseUrl = "https://graph.microsoft.com/v1.0/me/";
         }
-        
-        // TODO: Lots of DRY below, please
 
-        public async Task<Stream> GetContentStreamAsync(string relativeUrl, CancellationToken ct)
-        {
-            var uri = new[] {_baseUrl, relativeUrl}
-                .Select(it => it.Trim('/'))
-                .Join("/")
-                .Pipe(it => new Uri(it));
-            var code = await _authenticator.GetAccessTokenAsync();
-            var request = new HttpRequestMessage
+        public Task<Stream> GetContentStreamAsync(string relativeUrl, CancellationToken ct) => Invoke(
+            relativeUrl,
+            it => it.Method = HttpMethod.Get,
+            it => it.Content.ReadAsStreamAsync(),
+            ct);
+
+        public Task<T> GetAsync<T>(string relativeUrl, CancellationToken ct) => Invoke(
+            relativeUrl,
+            it => it.Method = HttpMethod.Get,
+            async it =>
             {
-                RequestUri = uri,
-                Method = HttpMethod.Get
-            };
-            request.Headers.Add("Authorization", $"bearer {code.AccessToken}");
-            using (var client = _httpClientFactory.GetClient())
-            {
-                var response = await client.SendAsync(request, ct);
-                return await response.Content.ReadAsStreamAsync();
-            }
-        }
-        
-        public async Task<T> GetAsync<T>(string relativeUrl, CancellationToken ct)
-        {
-            var uri = new[] {_baseUrl, relativeUrl}
-                .Select(it => it.Trim('/'))
-                .Join("/")
-                .Pipe(it => new Uri(it));
-            var code = await _authenticator.GetAccessTokenAsync();
-            var request = new HttpRequestMessage
-            {
-                RequestUri = uri,
-                Method = HttpMethod.Get
-            };
-            request.Headers.Add("Authorization", $"bearer {code.AccessToken}");
-            using (var client = _httpClientFactory.GetClient())
-            {
-                var response = await client.SendAsync(request, ct);
-                var payload = await response.Content.ReadAsStringAsync();
+                var payload = await it.Content.ReadAsStringAsync();
                 return JsonConvert.DeserializeObject<T>(payload);
-            }
-        }
+            },
+            ct);
 
-        public async Task<TResponsePayload> PostAsync<TPayload, TResponsePayload>(string relativeUrl, TPayload payload, CancellationToken ct)
-        {
-            var uri = new[] {_baseUrl, relativeUrl}
-                .Select(it => it.Trim('/'))
-                .Join("/")
-                .Pipe(it => new Uri(it));
-            var code = await _authenticator.GetAccessTokenAsync();
-            var request = new HttpRequestMessage
+        public Task<T> PutAsync<T>(string relativeUrl, Byte[] bytes, CancellationToken ct) => Invoke(
+            relativeUrl,
+            it =>
             {
-                RequestUri = uri,
-                Method = HttpMethod.Post,
-                Content = SerializeToJson(payload)
-            };
-            request.Headers.Add("Authorization", $"bearer {code.AccessToken}");
-            using (var client = _httpClientFactory.GetClient())
-            {
-                var response = await client.SendAsync(request, ct);
-                var responsePayload = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<TResponsePayload>(responsePayload);
-            }
-        }
+                it.Method = HttpMethod.Put;
+                it.Content = new ByteArrayContent(bytes);
+            },
+            async it => JsonConvert.DeserializeObject<T>(await it.Content.ReadAsStringAsync()),
+            ct);
 
-        public async Task<T> PutAsync<T>(string relativeUrl, Byte[] bytes, CancellationToken ct)
-        {
-            var uri = new[] {_baseUrl, relativeUrl}
-                .Select(it => it.Trim('/'))
-                .Join("/")
-                .Pipe(it => new Uri(it));
-            var code = await _authenticator.GetAccessTokenAsync();
-            
-            var request = new HttpRequestMessage
+        public async Task DeleteAsync(string relativeUrl, CancellationToken ct) => await Invoke(
+            relativeUrl,
+            it => it.Method = HttpMethod.Delete,
+            it => Task.FromResult(0),
+            ct);
+
+        public Task<TResponsePayload> PostAsync<TPayload, TResponsePayload>(
+            string relativeUrl,
+            TPayload payload,
+            CancellationToken ct) => Invoke(
+            relativeUrl,
+            it =>
             {
-                RequestUri = uri,
-                Method = HttpMethod.Put,
-                Content = new ByteArrayContent(bytes)
-            };
-            request.Headers.Add("Authorization", $"bearer {code.AccessToken}");
-            using (var client = _httpClientFactory.GetClient())
-            {
-                var response = await client.SendAsync(request, ct);
-                var responsePayload = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<T>(responsePayload);
-            }
-        }
+                it.Method = HttpMethod.Post;
+                it.Content = SerializeToJson(payload);
+            },
+            async it => JsonConvert.DeserializeObject<TResponsePayload>(await it.Content.ReadAsStringAsync()),
+            ct);
         
-        public async Task DeleteAsync(string relativeUrl, CancellationToken ct)
+        private async Task<T> Invoke<T>(
+            string relativeUrl,
+            Action<HttpRequestMessage> constructMessage,
+            Func<HttpResponseMessage, Task<T>> constructResponse,
+            CancellationToken ct)
         {
             var uri = new[] {_baseUrl, relativeUrl}
                 .Select(it => it.Trim('/'))
@@ -123,13 +84,13 @@ namespace Swync.Core.Onedrive.Http
             var request = new HttpRequestMessage
             {
                 RequestUri = uri,
-                Method = HttpMethod.Delete
             };
             request.Headers.Add("Authorization", $"bearer {code.AccessToken}");
+            constructMessage(request);
             using (var client = _httpClientFactory.GetClient())
             {
                 var response = await client.SendAsync(request, ct);
-                await response.Content.ReadAsStringAsync();
+                return await constructResponse(response);
             }
         }
 
