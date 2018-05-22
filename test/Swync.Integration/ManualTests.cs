@@ -30,7 +30,7 @@ namespace Swync.Integration
             _onedriveClient = new OnedriveClient(itemNavigator);
         }
         
-        [Fact]
+        [Fact(Skip = "Run me manually")]
         public async Task GetAllDrives()
         {
             var result = await _onedriveClient.GetDrivesAsync(_cancellationTokenSource.Token);
@@ -40,7 +40,7 @@ namespace Swync.Integration
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Run me manually")]
         public async Task CycleThroughDirectories()
         {
             const int directoriesToFetch = 200;

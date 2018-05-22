@@ -14,7 +14,7 @@ using Swync.Test.Common.Extensions;
 using Swync.Test.Common.Interceptors;
 using Xunit;
 
-namespace Swync.Integration
+namespace Swync.Integration.Core.Onedrive.Items
 {
     public class ItemNavigatorTests
     {
