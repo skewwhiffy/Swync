@@ -30,6 +30,19 @@ namespace Swync.Core.Onedrive.Http
             it => it.Method = HttpMethod.Get,
             it => it.Content.ReadAsStreamAsync(),
             ct);
+        
+        public Task<Stream> GetContentStreamAsync(
+            Uri absoluteUri,
+            Tuple<string, string> header,
+            CancellationToken ct) => Invoke(
+            absoluteUri,
+            it =>
+            {
+                it.Method = HttpMethod.Get;
+                it.Headers.Add(header.Item1, header.Item2);
+            },
+            it => it.Content.ReadAsStreamAsync(),
+            ct);
 
         public Task<T> GetAsync<T>(string relativeUrl, CancellationToken ct) => Invoke(
             relativeUrl,
@@ -69,7 +82,7 @@ namespace Swync.Core.Onedrive.Http
             },
             async it => JsonConvert.DeserializeObject<TResponsePayload>(await it.Content.ReadAsStringAsync()),
             ct);
-        
+
         private async Task<T> Invoke<T>(
             string relativeUrl,
             Action<HttpRequestMessage> constructMessage,
@@ -80,10 +93,18 @@ namespace Swync.Core.Onedrive.Http
                 .Select(it => it.Trim('/'))
                 .Join("/")
                 .Pipe(it => new Uri(it));
+            return await Invoke(uri, constructMessage, constructResponse, ct);
+        }
+        private async Task<T> Invoke<T>(
+            Uri absoluteUri,
+            Action<HttpRequestMessage> constructMessage,
+            Func<HttpResponseMessage, Task<T>> constructResponse,
+            CancellationToken ct)
+        {
             var code = await _authenticator.GetAccessTokenAsync();
             var request = new HttpRequestMessage
             {
-                RequestUri = uri,
+                RequestUri = absoluteUri,
             };
             request.Headers.Add("Authorization", $"bearer {code.AccessToken}");
             constructMessage(request);
@@ -109,6 +130,7 @@ namespace Swync.Core.Onedrive.Http
     {
         Task<T> GetAsync<T>(string relativeUrl, CancellationToken ct);
         Task<Stream> GetContentStreamAsync(string relativeUrl, CancellationToken ct);
+        Task<Stream> GetContentStreamAsync(Uri absoluteUri, Tuple<string, string> header, CancellationToken ct);
         Task<TResponsePayload> PostAsync<TPayload, TResponsePayload>(string relativeUrl, TPayload payload, CancellationToken ct);
         Task<T> PutAsync<T>(string relativeUrl, Byte[] bytes, CancellationToken ct);
         Task DeleteAsync(string relativeUrl, CancellationToken ct);

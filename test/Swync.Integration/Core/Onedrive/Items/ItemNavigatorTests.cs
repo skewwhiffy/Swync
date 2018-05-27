@@ -55,7 +55,19 @@ namespace Swync.Integration.Core.Onedrive.Items
                 
                 _interceptingClient.ClearCache();
 
-                var foldersToTest = _exhaustive ? itemsAtRoot.value : new[] {itemsAtRoot.value.TakeRandom()};
+                var filesAtRoot = itemsAtRoot.value.Where(it => it.file != null).ToArray();
+                var filesToTest = _exhaustive ? filesAtRoot : new[] {filesAtRoot.TakeRandom()};
+                foreach (var fileAtRoot in filesToTest)
+                {
+                    var itemMeta = await _sut.GetItemAsync(fileAtRoot.id, CancellationToken.None);
+                    var itemMetaPayload = _interceptingClient.Cache.Values.Single();
+                    itemMeta.SerializeToPrettyJson().Should().Be(itemMetaPayload.PrettyJson());
+                    
+                    _interceptingClient.ClearCache();
+                }
+                
+                var directoriesAtRoot = itemsAtRoot.value.Where(it => it.folder != null).ToArray();
+                var foldersToTest = _exhaustive ? directoriesAtRoot: new[] {directoriesAtRoot.TakeRandom()};
                 foreach (var folderAtRoot in foldersToTest)
                 {
                     var childItems = await _sut.GetChildrenAsync(folderAtRoot.id, CancellationToken.None);

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Swync.Core.Onedrive.Http;
@@ -9,10 +10,12 @@ namespace Swync.Core.Onedrive.Items
     public class ItemLoader
     {
         private readonly IOnedriveAuthenticatedAccess _access;
+        private readonly IItemNavigator _navigator;
 
-        public ItemLoader(IOnedriveAuthenticatedAccess access)
+        public ItemLoader(IOnedriveAuthenticatedAccess access, IItemNavigator navigator)
         {
             _access = access;
+            _navigator = navigator;
         }
 
         public async Task<OnedriveItemDao> UploadNewFileAsync(
@@ -42,6 +45,50 @@ namespace Swync.Core.Onedrive.Items
             using (var destination = new FileStream(fullFilePath, FileMode.CreateNew, FileAccess.Write))
             {
                 await source.CopyToAsync(destination);
+            }
+        }
+
+        public async Task DownloadFileInPartsAsync(
+            string itemId,
+            string fullFilePath,
+            int partSizeBytes,
+            CancellationToken ct)
+        {
+            var item = await _navigator.GetItemAsync(itemId, ct);
+            if (item.size == null)
+            {
+                throw new ArgumentNullException(nameof(item.size), "Expected size to come back from Onedrive");
+            }
+            var sizeLong = item.size.Value;
+            if (sizeLong > int.MaxValue)
+            {
+                throw new NotImplementedException("File too large (for the mo)");
+            }
+
+            var size = (int) sizeLong;
+            var downloadUrl = item.microsoftGraphDownloadUrl;
+            using (var file = File.Create(fullFilePath, partSizeBytes))
+            using (var writer = new StreamWriter(file))
+            {
+                var startRange = 0;
+                while (startRange < size)
+                {
+                    var endRange = startRange + partSizeBytes - 1;
+                    if (endRange > size)
+                    {
+                        endRange = size;
+                    }
+                    var header = Tuple.Create("Range", $"bytes={startRange}-{endRange}");
+
+                    using (var source = await _access.GetContentStreamAsync(downloadUrl, header, ct))
+                    {
+                        await source.CopyToAsync(file);
+                    }
+
+                    startRange = endRange + 1;
+                }
+
+                await writer.FlushAsync();
             }
         }
     }

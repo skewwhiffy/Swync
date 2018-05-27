@@ -52,7 +52,7 @@ namespace Swync.Core.Onedrive.Authentication
                 {
                     var content = await reader.ReadToEndAsync();
                     token = RefreshTokenDetails.FromTokenResponse(content);
-                    if (token.ExpiryTime > DateTime.UtcNow.AddSeconds(30))
+                    if (token.ExpiryTime > DateTime.UtcNow.AddMinutes(1))
                     {
                         return token;
                     }

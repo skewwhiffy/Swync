@@ -33,7 +33,7 @@ namespace Swync.Integration.Core.Onedrive.Items
             var access = new OnedriveAuthenticatedAccess(authenticator, httpClientFactory.Object);
             _folder = TestFolder.WithPrefix("item_loader_tests");
             _navigator = new ItemNavigator(access);
-            _sut = new ItemLoader(access);
+            _sut = new ItemLoader(access, _navigator);
             _output = output;
         }
         
@@ -54,18 +54,26 @@ namespace Swync.Integration.Core.Onedrive.Items
 
             var downloadedFile = Path.Combine(_folder.Info.FullName, $"{Guid.NewGuid()}.swync.test");
             await _sut.DownloadFileAsync(result.id, downloadedFile, CancellationToken.None);
-            _output.WriteLine(downloadedFile);
+            await AssertFilesBinaryIdentical(file, downloadedFile);
+
+            var downloadedFileInParts = Path.Combine(_folder.Info.FullName, $"{Guid.NewGuid()}.sywnc.partial.test");
+            await _sut.DownloadFileInPartsAsync(result.id, downloadedFileInParts, 17, CancellationToken.None);
+            await AssertFilesBinaryIdentical(file, downloadedFileInParts);
+
+            await _sut.DeleteFileAsync(result.id, CancellationToken.None);
+        }
+
+        private async Task AssertFilesBinaryIdentical(FileInfo file, string downloadedFile)
+        {
             using (var source = file.OpenRead())
             using (var destination = new FileStream(downloadedFile, FileMode.Open, FileAccess.Read))
             {
                 source.Length.Should().Be(destination.Length);
                 for (var i = 0; i < source.Length; i++)
                 {
-                    source.ReadByte().Should().Be(destination.ReadByte());
+                    source.ReadByte().Should().Be(destination.ReadByte(), $"{downloadedFile} differs");
                 }
             }
-
-            await _sut.DeleteFileAsync(result.id, CancellationToken.None);
         }
 
         public void Dispose()

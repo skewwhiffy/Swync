@@ -8,6 +8,7 @@ namespace Swync.Core.Onedrive.Items
     public interface IItemNavigator
     {
         Task<OnedriveContainerDao<OnedriveDriveDao>> GetDrivesAsync(CancellationToken ct);
+        Task<OnedriveItemDao> GetItemAsync(string itemId, CancellationToken ct);
         Task<OnedriveContainerDao<OnedriveItemDao>> GetItemsAsync(string driveId, CancellationToken ct);
         Task<OnedriveContainerDao<OnedriveItemDao>> GetChildrenAsync(string parentId, CancellationToken ct);
     }
@@ -24,6 +25,11 @@ namespace Swync.Core.Onedrive.Items
         public Task<OnedriveContainerDao<OnedriveDriveDao>> GetDrivesAsync(CancellationToken ct) =>
             _access.GetAsync<OnedriveContainerDao<OnedriveDriveDao>>("drives", ct);
 
+        public Task<OnedriveItemDao> GetItemAsync(
+            string itemId,
+            CancellationToken ct) =>
+            _access.GetAsync<OnedriveItemDao>($"drive/items/{itemId}", ct);
+        
         public Task<OnedriveContainerDao<OnedriveItemDao>> GetItemsAsync(string driveId, CancellationToken ct) =>
             _access.GetAsync<OnedriveContainerDao<OnedriveItemDao>>($"drives/{driveId}/root/children", ct);
 
