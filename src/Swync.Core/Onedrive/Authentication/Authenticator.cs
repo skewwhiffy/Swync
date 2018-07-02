@@ -36,7 +36,7 @@ namespace Swync.Core.Onedrive.Authentication
         private const string ResponseType = "code";
         
 
-        public async Task<RefreshTokenDetails> GetAccessTokenAsync()
+        public async Task<RefreshTokenDetails> GetAccessTokenAsync(CancellationToken ct)
         {
             var queryVariables = new Dictionary<string, string>
             {
@@ -47,7 +47,7 @@ namespace Swync.Core.Onedrive.Authentication
             RefreshTokenDetails token;
             try
             {
-                await FileLock.WaitAsync();
+                await FileLock.WaitAsync(ct);
                 using (var reader = new StreamReader(FileName))
                 {
                     var content = await reader.ReadToEndAsync();
@@ -63,7 +63,7 @@ namespace Swync.Core.Onedrive.Authentication
             }
             catch (FileNotFoundException)
             {
-                var authToken = await GetAuthorizationCodeAsync();
+                var authToken = await GetAuthorizationCodeAsync(ct);
                 queryVariables["grant_type"] = "authorization_code";
                 queryVariables["code"] = authToken;
             }
@@ -75,14 +75,14 @@ namespace Swync.Core.Onedrive.Authentication
             using (var client = new HttpClient())
             {
                 var content = new FormUrlEncodedContent(queryVariables);
-                var response = await client.PostAsync("https://login.live.com/oauth20_token.srf", content);
+                var response = await client.PostAsync("https://login.live.com/oauth20_token.srf", content, ct);
                 var payload = await response.Content.ReadAsStringAsync();
                 token = RefreshTokenDetails.FromTokenResponse(payload);
             }
 
             try
             {
-                await FileLock.WaitAsync();
+                await FileLock.WaitAsync(ct);
                 using (var writer = new StreamWriter(FileName))
                 {
                     await writer.WriteAsync(JsonConvert.SerializeObject(token));
@@ -96,9 +96,9 @@ namespace Swync.Core.Onedrive.Authentication
             return token;
         }
 
-        private async Task<string> GetAuthorizationCodeAsync()
+        private async Task<string> GetAuthorizationCodeAsync(CancellationToken ct)
         {
-            var listenTask = ListenForAuthorizationCode(Port);
+            var listenTask = ListenForAuthorizationCode(Port, ct);
             var queryVariables = new Dictionary<string, string>
             {
                 {"client_id", ClientId},
@@ -139,7 +139,7 @@ namespace Swync.Core.Onedrive.Authentication
             throw new NotImplementedException("Need another port");
         }
         
-        private async Task<string> ListenForAuthorizationCode(int port)
+        private async Task<string> ListenForAuthorizationCode(int port, CancellationToken ct)
         {
             var listener = new HttpListener();
             listener.Prefixes.Add($"http://*:{port}/");
@@ -150,7 +150,7 @@ namespace Swync.Core.Onedrive.Authentication
             context
                 .Response
                 .ContentLength64 = buffer.Length;
-            await context.Response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
+            await context.Response.OutputStream.WriteAsync(buffer, 0, buffer.Length, ct);
             context.Response.OutputStream.Close();
             listener.Stop();
             return context.Request.QueryString["code"];
