@@ -5,4 +5,9 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Hangfire.Core, Version=1.6.19.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\..\..\..\..\.nuget\packages\hangfire.core\1.6.19\lib\netstandard1.3\Hangfire.Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>

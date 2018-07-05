@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Hangfire;
+using Hangfire.SQLite;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using Swync.Core.Onedrive;
 
 namespace Swync.Api
 {
@@ -24,6 +21,8 @@ namespace Swync.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.AddSingleton<OnedriveService>();
+            services.AddHangfire(x => x.UseSQLiteStorage("hangfire"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -35,6 +34,8 @@ namespace Swync.Api
             }
 
             app.UseMvc();
+            //app.UseHangfireServer();
+            //OnedriveMetaSync.Singleton.Start();
         }
     }
 }
